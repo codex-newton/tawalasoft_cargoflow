@@ -16,7 +16,7 @@ def before_save(doc, method=None):
 def _get_purchase_receipts(shipment_no):
     rows = frappe.db.sql(
         """
-        SELECT name, posting_date, rounded_total, grand_total, supplier
+        SELECT name, posting_date, base_rounded_total, base_grand_total, supplier
         FROM `tabPurchase Receipt`
         WHERE docstatus = 1 AND custom_shipment_no = %s
         ORDER BY posting_date, name
@@ -31,7 +31,7 @@ def _get_purchase_receipts(shipment_no):
             "receipt_document": r.name,
             "supplier": r.supplier,
             "posting_date": r.posting_date,
-            "grand_total": r.rounded_total or r.grand_total,
+            "grand_total": r.base_rounded_total or r.base_grand_total,
         }
         for r in rows
     ]
@@ -45,14 +45,15 @@ def _get_landed_cost_invoices(shipment_no):
             p.conversion_rate,
             p.currency,
             c.expense_account,
-            SUM(c.base_net_amount) AS net_amount
+            c.net_amount,
+            c.base_net_amount
         FROM `tabPurchase Invoice` p
         INNER JOIN `tabPurchase Invoice Item` c ON p.name = c.parent
         WHERE p.docstatus = 1
             AND p.custom_shipment_no = %s
             AND p.custom_purchase_invoice_type = 'Landed Cost Invoice'
-        GROUP BY p.name, p.conversion_rate, p.currency, c.expense_account
-        ORDER BY p.posting_date, p.name
+            AND c.expense_account NOT LIKE '%%Stock Received But Not Billed%%'
+        ORDER BY p.posting_date, p.name, c.idx
         """,
         (shipment_no,),
         as_dict=True,
@@ -70,21 +71,20 @@ def _get_landed_cost_invoices(shipment_no):
         for r in rows
     ]
 
-
 def _sync_tax_details(doc):
     invoice_cache = {}
 
     for row in doc.taxes:
-        if row.purchase_invoice:
-            if row.purchase_invoice not in invoice_cache:
-                invoice_cache[row.purchase_invoice] = frappe.db.get_value(
+        if hasattr(row, "custom_purchase_invoice") and row.custom_purchase_invoice:
+            if row.custom_purchase_invoice not in invoice_cache:
+                invoice_cache[row.custom_purchase_invoice] = frappe.db.get_value(
                     "Purchase Invoice",
-                    row.purchase_invoice,
+                    row.custom_purchase_invoice,
                     ["conversion_rate", "currency"],
                     as_dict=True,
                 )
 
-            pi = invoice_cache[row.purchase_invoice]
+            pi = invoice_cache[row.custom_purchase_invoice]
             if pi:
                 if not row.exchange_rate:
                     row.exchange_rate = pi.conversion_rate or 1

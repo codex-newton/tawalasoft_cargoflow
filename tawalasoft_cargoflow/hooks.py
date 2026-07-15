@@ -276,6 +276,7 @@ fixtures = [
                     "Purchase Invoice-custom_purchase_invoice_type",
                     "Purchase Receipt-custom_shipment_no",
                     "Purchase Order-custom_shipment_no",
+                    "Landed Cost Taxes and Charges-custom_purchase_invoice",
                 ],
             ]
         ],

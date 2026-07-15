@@ -30,7 +30,7 @@ frappe.ui.form.on("Landed Cost Voucher", {
                    a.expense_account = row.expense_account;
                    a.description = row.description;
                    a.amount = row.amount;
-                   a.purchase_invoice = row.purchase_invoice;
+                   a.custom_purchase_invoice = row.purchase_invoice;
                    a.exchange_rate = row.exchange_rate;
                    a.account_currency = row.account_currency;
                });
