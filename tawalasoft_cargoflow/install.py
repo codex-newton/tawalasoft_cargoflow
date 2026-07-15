@@ -12,9 +12,8 @@ def after_install():
         if not frappe.db.exists("Purchase Invoice Type", name):
             doc = frappe.get_doc({
                 "doctype": "Purchase Invoice Type",
-                "name1": name,
+                "purchase_invoice_type": name,
             })
             doc.insert(ignore_permissions=True)
-            frappe.db.commit()
 
-    frappe.msgprint("Purchase Invoice Types created successfully.")
+    frappe.db.commit()
