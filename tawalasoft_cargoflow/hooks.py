@@ -48,6 +48,22 @@ app_license = "mit"
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
 # doctype_calendar_js = {"doctype" : "public/js/doctype_calendar.js"}
 
+after_install = "tawalasoft_cargoflow.install.after_install"
+
+doctype_js = {
+    "Landed Cost Voucher": "public/js/landed_cost_voucher.js",
+    "Purchase Invoice": "public/js/purchase_invoice.js",
+}
+
+doc_events = {
+    "Landed Cost Voucher": {
+        "before_save": "tawalasoft_cargoflow.services.landed_cost_voucher.before_save",
+    },
+    "Purchase Invoice": {
+        "validate": "tawalasoft_cargoflow.services.purchase_invoice.validate",
+    },
+}
+
 # Svg Icons
 # ------------------
 # include app icons in desk
@@ -247,3 +263,21 @@ app_license = "mit"
 # List of apps whose translatable strings should be excluded from this app's translations.
 # ignore_translatable_strings_from = []
 
+fixtures = [
+    {
+        "dt": "Custom Field",
+        "filters": [
+            [
+                "name",
+                "in",
+                [
+                    "Landed Cost Voucher-custom_shipment_no",
+                    "Purchase Invoice-custom_shipment_no",
+                    "Purchase Invoice-custom_purchase_invoice_type",
+                    "Purchase Receipt-custom_shipment_no",
+                    "Purchase Order-custom_shipment_no",
+                ],
+            ]
+        ],
+    },
+]
